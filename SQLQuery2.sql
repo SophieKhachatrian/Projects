@@ -1,0 +1,194 @@
+Select * 
+from CovidDeaths
+
+
+Select * 
+from CovidVaccinations
+
+-- Total Cases vs Total Deaths
+-- Shows likelihood of dying if people are diagnosed by Covid in these countries 
+
+Select Location, date, total_cases, total_deaths, (CAST(total_deaths AS decimal) / CAST(total_cases AS decimal)) * 100 as DeathPercentage
+From CovidDeaths
+
+
+-- Total Cases vs Population
+-- Shows what percentage of population infected with Covid
+
+Select Location, date, Population, total_cases, (CAST(total_cases AS decimal)/CAST(Population AS decimal))*100 as PercentOfPopulationInfected
+From CovidDeaths
+
+
+-- Find countires with highest infection rate
+
+Select Location, Population, MAX(total_cases) as LargestInfectionCount,
+MAX((CAST(total_cases AS decimal)/CAST(Population AS decimal))*100) as PopluationInfectedPrecent
+From CovidDeaths
+Group by Location, Population
+Order by 4 DESC
+
+--As we see these countires are Andorra, Montenegro, Czechia, San Marino.... United states is 9th 
+
+
+-- Countires having highest Death Count
+
+
+Select Location, MAX(CAST(total_deaths AS int)) as DeathCount
+From CovidDeaths
+Where continent is not NULL
+Group by Location
+Order by 2 DESC
+--Top 3 United States, Brazil, Mexico
+
+
+
+
+-- CONTINENTS
+
+-- Continents having highest Death Count
+
+Select Continent, MAX(CAST(total_deaths AS int)) as DeathCount
+From CovidDeaths
+Where continent is not NULL
+Group by Continent
+Order by 2 DESC
+
+--Top 3 North America, South America, Asia
+
+
+-- Continents having highest Precent of Infection
+
+Select Continent,
+MAX((CAST(total_cases AS decimal)/CAST(Population AS decimal))*100) as PercentInfected
+From CovidDeaths
+Where continent is not NULL
+Group by Continent
+Order by PercentInfected DESC
+
+--Top 3 Europe, Asia, North America
+
+
+--GLOBAL NUMBERS
+
+Select Date, Sum(CAST(new_cases AS decimal)) AS TotalCases, Sum(CAST(new_deaths AS decimal)) AS TotalDeaths,
+Sum(CAST(new_deaths AS decimal))/Sum(CAST(new_cases AS decimal))*100 AS DeathPrecent
+From CovidDeaths
+Where continent is not NULL
+Group by Date
+Order by DeathPrecent DESC
+
+
+--Total Cases, Death, and precentage 
+
+Select Sum(CAST(new_cases AS decimal)) AS TotalCases, Sum(CAST(new_deaths AS decimal)) AS TotalDeaths,
+Sum(CAST(new_deaths AS decimal))/Sum(CAST(new_cases AS decimal))*100 AS DeathPrecent
+From CovidDeaths
+Where continent is not NULL
+-- According to results the precentage of Death when infected is 2.112%
+
+--Join 2 tables 
+--Shows the number of population being vacinated each day(new_vaccinations) and till that day (PeopleVaccinated)
+
+Select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
+, SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.Location Order by dea.location, dea.Date) as PeopleVaccinated
+From CovidDeaths dea
+Join CovidVaccinations vac
+	On dea.location = vac.location
+	and dea.date = vac.date
+where dea.continent is not null 
+order by 2,3
+
+
+-- Using CTE to perform Calculation on Partition By in previous query
+
+With PopvsVac (Continent, Location, Date, Population, New_Vaccinations, PeopleVaccinated)
+as
+(
+Select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
+, SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.Location Order by dea.location, dea.Date) as PeopleVaccinated
+From CovidDeaths dea
+Join CovidVaccinations vac
+	On dea.location = vac.location
+	and dea.date = vac.date
+where dea.continent is not null 
+)
+Select *, (CAST(PeopleVaccinated AS decimal)/Population)*100 as PrecentofPeopleVaccinated
+From PopvsVac
+
+-- TotalNumber of Vaccinations
+Select dea.location, dea.population, Sum(CAST(vac.new_vaccinations AS decimal)) as TotalVaccinations  
+From CovidDeaths dea
+Join CovidVaccinations vac
+	On dea.location = vac.location
+	and dea.date = vac.date
+where dea.continent is not null 
+Group by dea.location, dea.population
+order by TotalVaccinations DESC
+
+-- -- Using CTE to perform Calculation on TotalVaccinations in previous query
+With VacTotPrecent(Location, Population, TotalVac)
+As (
+Select dea.location, dea.population, Sum(CAST(vac.new_vaccinations AS decimal)) as TotalVac 
+From CovidDeaths dea
+Join CovidVaccinations vac
+	On dea.location = vac.location
+	and dea.date = vac.date
+where dea.continent is not null 
+Group by dea.location, dea.population
+)
+Select *, (TotalVac/Population) AS PrecentOfVac
+From VacTotPrecent
+Order by PrecentOfVac DESC
+
+
+--TEMP TABLE
+
+-- Same with TEMP TABLE
+
+DROP Table if exists #PercentPopulationVaccinated
+Create Table #PercentPopulationVaccinated
+(
+Continent nvarchar(255),
+Location nvarchar(255),
+Date datetime,
+Population numeric,
+New_vaccinations numeric,
+RollingPeopleVaccinated numeric
+)
+
+Insert into #PercentPopulationVaccinated
+Select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
+, SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.Location Order by dea.location, dea.Date) as RollingPeopleVaccinated
+From CovidDeaths dea
+Join CovidVaccinations vac
+	On dea.location = vac.location
+	and dea.date = vac.date
+
+
+Select *, (RollingPeopleVaccinated/Population)*100 as PrecentofPeopleVaccinated
+From #PercentPopulationVaccinated
+
+
+-- Creating VIEWs to store data for later visualizations and works
+
+CREATE VIEW PercentPopulationVaccinated AS
+Select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
+, SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.Location Order by dea.location, dea.Date) as RollingPeopleVaccinated
+From CovidDeaths dea
+Join CovidVaccinations vac
+	On dea.location = vac.location
+	and dea.date = vac.date
+
+CREATE VIEW DateDeaths AS
+Select Date, Sum(CAST(new_cases AS decimal)) AS TotalCases, Sum(CAST(new_deaths AS decimal)) AS TotalDeaths,
+Sum(CAST(new_deaths AS decimal))/Sum(CAST(new_cases AS decimal))*100 AS DeathPrecent
+From CovidDeaths
+Where continent is not NULL
+Group by Date
+
+
+CREATE VIEW DeathPerCont AS
+Select Continent, MAX(CAST(total_deaths AS int)) as DeathCount
+From CovidDeaths
+Where continent is not NULL
+Group by Continent
