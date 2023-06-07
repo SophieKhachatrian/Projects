@@ -30,7 +30,7 @@ Order by 4 DESC
 --As we see these countires are Andorra, Montenegro, Czechia, San Marino.... United states is 9th 
 
 
--- Countires having highest Death Count
+-- Countries having the highest Death Count
 
 
 Select Location, MAX(CAST(total_deaths AS int)) as DeathCount
