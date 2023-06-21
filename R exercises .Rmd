@@ -1,7 +1,6 @@
 ---
-title: "Homework Assignment 12 (100 + 10 bonus points)"
-author: ""
-date: ""
+title: "R Exercises"
+author: "Sofi Khachatryan
 output: pdf_document
 ---
 
@@ -9,80 +8,14 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Write your solutions and comments in this markdown file and submit it with its pdf version to moodle.  
-
-Write all the libraries you are using here:
+libraries
 ```{r}
 library(stringr)
 library(dplyr)
 library(ggplot2)
 ```
 
-
-## Regex Patterns (100 + 10 points)
-
-**1.1. Consider the vector of character texts given below. Make all the texts to upper case. (6 point)**
-```{r}
-txts <- c("R", "is", "a", "Programming", "language", "and", "Free", "Software", "environment", "for", "Statistical", "computing")
-
-toupper(txts)
-```
-
-**1.2. Create a function, which will get an input a text character vector, and using *str_sub* and *toupper* functions make the first character of each word uppercase. The function should return a sentence from this words. Run it on the above example *txts*. (10 points)**  
-A small example: input - c("I", "want", "to", "go"), output - "I Want To Go"
-
-```{r}
-get_upper_sentence <- function(texts) {
-  res <- ""
-  for (text in texts) {
-    first_letter <- str_sub(text, start=1, end=1)
-    others <- str_sub(text, start=2, end=-1)
-    word <- paste0(toupper(first_letter), others)
-    res <- paste(res, word)
-  }
-  return (str_trim(res))
-}
-get_upper_sentence(txts)
-```
-
-**1.3. Create a pattern that checks in *text_1* if there is a lowercase character followed by any character (that is letter, digit, symbol, anything) and then by a digit. Use *str_detect*. (8 points)**
-A small example: "4aB7" - True as there is 'aB7' pattern satisfying to condition, "3aBC" - False
-
-```{r}
-text_1 <- c("asdf123", "rand3R.", "aAA434", "String2")
-
-str_detect(text_1, pattern="[a-z].[0-9]")
-```
-
-**1.4. Using regex find a pattern that will match the exact string of "?^?". Use detecting or subseting function of stringr. (8 points)**
-
-```{r}
-example <- c("-as?^?as", "?^?12", "thisnot?")
-
-str_detect(example, pattern = "\\?\\^\\?")
-```
-
-
-**1.5. Replace all " 1 " characters that are not part of a longer number or part of a word (not "14", "1991", "covid19", but "1 time" -> "one time") in the strings below by " one ". In other words you have to replace all 1-s that have nothing by their sides (symbol, other numbers) by "one". (8 points)**   
-A small example: "All in 1 piece: safely." -> "All in one piece: safely."
-
-```{r}
-text_2 <- c("All in 1 breath: said of something spoken excitedly without pause." ,
-            "All in 1 piece: safely.", 
-            "At the age of 19 months, children was learning to talk.",
-            "All rolled up in 1 combined.",
-            "All-in-one with all required features.", 
-            "It is difficult age: from 14 to 19.",
-            "State advises citizens to reconsider traveling due to impact of covid19.",
-            "As 1 as if a group were 1 entity.")
-
-text_2_fixed <- str_replace_all(text_2, pattern="\\s1\\s", replacement=" one ")
-text_2_fixed
-```
-
-
-
-**1.6. Create a function, which will get an input a text character vector, where there should be phone numbers. The function should extract all numbers that are valid Armenian numbers (check that it starts with 0 and does not have letters in it and number of digits is 9: that is enough), bring all valid numbers to one format (either with "-"s or without, either with spaces or without). Run your function on the example *phone_numbers*. (10 points)**
+**Create a function, which will get an input a text character vector, where there should be phone numbers. The function should extract all numbers that are valid Armenian numbers (check that it starts with 0 and does not have letters in it and number of digits is 9: that is enough), bring all valid numbers to one format (either with "-"s or without, either with spaces or without)**
 
 ```{r}
 phone_numbers <- c("091-234931", "5214698", "a033255687", "077-45-89-96", "256347077", "047155266", "05523365d", "096900611", "096-900611", "11008005", "077 33 70 91")
@@ -102,8 +35,7 @@ formatted_phone_numbers <- get_formatted_numbers(phone_numbers)
 formatted_phone_numbers
 ```
 
-**1.7. Having the result of previous exercise, count how many phone numbers belong to Beeline company, if the codes for Beeline company are "091", "099", "047", "043", "096". Create your pattern with the existing vector *beeline_codes* below? (8 points)**      
-Hint: Look at *paste0* function and its arguments, there should be 2. Which one you need? 
+**Having the result of previous exercise, count how many phone numbers belong to Beeline company, if the codes for Beeline company are "091", "099", "047", "043", "096".**      
 
 ```{r}
 beeline_codes <- c("091", "099", "047", "043", "096")
@@ -116,63 +48,274 @@ beeline_count
 ```
 
 
-**1.8. Create a function that will get an input a character vector, and using whitespaces that can be added through BOTH ends of string, make the length of each string in the vector to be equal to the longest string in the vector. Run your function in any example. (6 points)**  
-A small example: if function gets as an input c("I", "am", "happy"), it should output c("  I  ", " am  ", "happy") (all strings have length of 5, as the longest word "happy").   
 
-Hint: Use google to find function/s that can be used for this. What about *str_pad* and *str_trim*? Which do you need?
+You are given a video games dataset containing information about popular video games, their sales in North America, Europe, Japan and globally in the world. 
+
+**Import the *video_games_2.csv* dataset into R. Print the structure of the dataset, by 1-2 sentences write what you see in the structure.**
+```{r}
+video_games_df <- read.csv("video_games_2.csv")
+str(video_games_df)
+```
+
+As we can see the dataset consists of 7586 observations and 15 features. There are 7 columns that are characters initially and 8 features that are numeric.
+
+
+**Using dplyr package subset the dataframe by following these instructions:  
+- remove columns Publisher, JP_Sales (Sales in Japan), Critic_Count, User_Count and Developer,  
+- multiply the numbers in NA_Sales, EU_Sales and Global_Sales by 1 million as they are given in millions of sales,  
+- include only those observations for which NA_Sales>=20000, EU_Sales>=20000 and Rating is among "E", "M", "T", "E10+", "AO" (the meanings of abbrevations: Everyone, Mature, Teen, Everyone 10+, Adults Only, they are used in the dataframe by the abbrevations)** 
+
 
 ```{r}
-pad_to_longest <- function(input_vector){
-  lengths <- nchar((input_vector))
-  longest = max(lengths)
-  result = str_pad(input_vector, width=longest, side='both')
-  return (result)
-}
+video_games <- video_games_df %>%
+  select(-c(Publisher, JP_Sales, Critic_Count, User_Count, Developer)) %>%
+  mutate(NA_Sales = NA_Sales * 1e+6,
+         EU_Sales = EU_Sales * 1e+6, 
+         Global_Sales = Global_Sales * 1e+6) %>%
+  filter(Rating %in% c("E", "M", "T", "E10+", "AO") & NA_Sales>=20000 & EU_Sales>=20000)
+str(video_games)
+```
+  
 
-pad_to_longest(c("I", "am", "happy"))
+**Imagine that there are validation rules for 2 columns of our dataframe: "Critic_Score"s can be integer values from 0 to 100 and "User_Score"s can be integers from 1 to 10.** 
+```{r} 
+video_games_valid <- video_games %>%
+  mutate(User_Score = round(User_Score), 
+         Critic_Score = round(Critic_Score)) %>%
+  filter(User_Score %in% c(1:10), 
+         Critic_Score %in% c(0:100))
+```
+
+**Use subsetted data *video_games_valid* and create a boxplot displaying how *User_Score*s and *Critic_Score*s are interconnected. Use *User_Score* for the x-axis and as it is a numerical type but has discrete value range (1, 2, ..., 10), convert it to Factor datatype, then create the boxplot to have better results. Make the boxplot's edges *red* and boxplot's background *tomato*. **
+
+```{r}
+ggplot(data=video_games_valid, aes(x=as.factor(User_Score), y=Critic_Score)) +
+  geom_boxplot(fill="tomato", col="red") +
+  labs(title="Interconnection between User scores and Critics score", 
+       x="User Score", 
+       y="Critic Score")
+```
+It can be observed from the graph that as User Score increases, Critic Score tends to increase as well.
+
+```{r}
+cor(video_games_valid$User_Score, video_games_valid$Critic_Score)
+```
+As we can see from both the graph and correlation result,the correlation between two features is positive as one might suspect.
+
+
+**Construct a scatterplot showing how the EU_Sales (Europe Sales) of the game is dependent of NA_Sales (North American Sales). Use subsetted dataframe video_games_valid** 
+
+
+```{r}
+options(scipen=999)
+ggplot(data=video_games_valid, aes(x=NA_Sales, y=EU_Sales)) + 
+  geom_point(alpha = 0.2, color='black')+
+  labs(title="North American Sales dependence from the Europe Sales", x="North American Sales", y="Europe Sales")+
+  coord_cartesian(ylim=c(0, 1e+7), xlim=c(1, 1e+7)) +
+  theme_minimal()
+```
+One can see from the graph, that the correlation between two variables is mainly positive, but there are also cases, when the video game had much more sales in North America than in Europe, and the reverse.
+
+
+
+**Create a barplot to find how many games of each Genre there are in the dataset. Use either *valid_video_games* or your initial dataset. State what are the top 3 Genres according to the graph. ** 
+
+```{r}
+ggplot(video_games_valid, aes(x=Genre)) +
+  geom_bar() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(title="Distribution of the games by Genre", x="Genre Names", y="Number of games")
+```
+From the histogram, its easy to see that top 3 genres are Action, Sports and Shooter.
+
+The exercise to try:
+```{r}
+video_games_valid %>%
+  group_by(Genre) %>%
+  summarise(count = n()) %>%
+  ggplot(aes(x = reorder(Genre, -count), y = count)) + geom_bar(stat = 'identity') +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(title="Distribution of the games by Genre ordered by count", x="Genre Names", y="Number of games")
+```
+
+*show the number of video games in each genre in descending order according to the dataset.*
+```{r}
+vg_genres <- video_games_valid %>%
+  group_by(Genre) %>%
+  summarise(count=n()) %>%
+  arrange(desc(count)) 
+vg_genres
+```
+
+Define the *Rating* column as Factor (if it is not already so) and use faceting (facet_grid) to plot scatterplot *User_Score* vs *NA_Sales* (North America Sales) for different Ratings. Zoom the graph so User_Score is between 5 and 10, and North American Sales are from 0 to 15500000. Do not forget about the titles and interpretations. (7 points)
+
+```{r}
+video_games$Rating <- factor(video_games$Rating)
+ggplot(video_games, aes(x=User_Score, y=NA_Sales)) +
+  geom_point() + facet_grid(.~Rating) +
+  labs(title="User score of the game VS the North America Sales for different Ratings", 
+       x="Score given by the User", y="North America Sales")+
+  coord_cartesian(xlim=c(5, 10), ylim=c(0, 1.55e+7))
+```
+User Scores and North America Sales variables are dependent and as one increases the other tends to increase as well. What is more, we can observe the differences between Ratings as well. For instance, we can see that games with rating 'Everyone' has games with the highest sales in North America.
+
+
+Make these design changes on the plot from the previous exercise:   
+- x axis name -- "Score given by the User" color: "khaki3", bold, size: 15,  
+- y axis name -- "North America Sales" color: "khaki3", bold, size: 15,  
+- points (shape - square, color: "brown", size: 1.5),  
+- title of the plot -- "User score of the game VS the North America Sales for different Ratings",  
+- panel background color: "beige",  
+- axis texts bold black.  
+
+```{r}
+ggplot(video_games, aes(x=User_Score, y=NA_Sales))+
+  geom_point(size = 1.5, col="brown", shape = 0)+facet_grid(.~Rating) +
+  labs(title="User score of the game VS the North America Sales for different Ratings", 
+       x="Score given by the User", y="North America Sales")+
+  coord_cartesian(xlim=c(5, 10), ylim=c(0, 1.55e+7)) +
+  
+  theme(axis.text.x = element_text(color = "black", face="bold"),
+      axis.text.y = element_text(color = "black", face="bold"),
+      axis.title.x = element_text(size = 15, color = "khaki3", face="bold"),
+      axis.title.y = element_text(size = 15, color = "khaki3", face="bold"),
+      panel.background = element_rect(fill = 'beige')) 
 ```
 
 
-**1.9. Write a regex pattern that given a character vector and desired_length, will return subsetted vector containing only those strings that are the same length as the desired length. Do NOT use *nchar* function in your code. Use regex. (10 points)**
+ We are interested in the number of video games developed for platforms *'PS2', 'X360', 'PS3'* for different years.  
+- Make other platforms, that are not from these 3 as "Other" using dplyr (Hint: ifelse statement).  
+- Remove all observations from dataframe which have any NA values (Hint: ?complete.cases).  
+- Use faceting to draw the distribution of games for each year for each platform. Make text on "x" axis vertical and size=5.   
+
 
 ```{r}
-input_vector <- c("what", "is", "your", "problem", "with", "so", "many", "words")
-desired_length <- 4
+top_platforms <- c('PS2', 'X360', 'PS3')
+video_games %>% 
+  mutate(Platform = ifelse(Platform %in% top_platforms, Platform, 'Other')) %>%
+  filter(complete.cases(.) ) %>%
+  group_by(Platform, Year) %>%
+  summarise(Count=n()) %>%
+  ggplot(aes(x=Year, y=Count))+geom_bar(stat="identity")+
+  theme(axis.text.x = element_text(angle = 90, size = 5)) +
+  labs(title="The distribution of games for each year for each platform", 
+       x="Years", 
+       y="Number of games") +
+  facet_grid(.~Platform)
+```
+In all platforms we can see that there is a peak in the middle. The number of games start to increase, reach their maximum point and tend to decrease.
+PS2 platform reachs its peak at 2005s when it has almost 180 games.
+PS3 platform reachs its peak at 2010s when it has almost 110 games.
+X360 platform reachs its peak at 2010s when it has almost 110 games.
+And other platforms reached the pick at 2005s when they had almost 270 games.
 
-pattern_letters <- paste0(rep(".", desired_length), collapse = "")
-pattern <- paste0("^", pattern_letters, "$")
+*countries.csv* dataset to R by reading it. Then print first 4 observations in the dataset. Next state how many observations and how many features the dataframe has? Are all features numeric ones? 
 
-str_subset(input_vector, pattern = pattern)
+```{r}
+countries <- read.csv("countries.csv", stringsAsFactors = F)
+head(countries, n=4)
+```
+
+For telling how many observations and features, the dataframe has, we can use the *str* function.
+```{r}
+str(countries)
+```
+
+We can see that the dataframe has 227 observations and 20 variables. We also can see that almost all features are numeric except of the Country and Region.
+
+
+The column Population shows the population for all the countries. Find the maximum and minimum population values in the dataset. 
+
+```{r}
+min(countries$Population)
+```
+
+```{r}
+max(countries$Population)
 ```
 
 
-**1.10. Do the same thing as in previous exercise, but find all words that have length >= desired_length. (8 points)**
-
+Having the min and max values, we can subset the dataframe accordingly, and choose the Country column, to see names of desired countries. 
 ```{r}
-str_subset(input_vector, pattern = pattern_letters)
-```
-
-**1.11. Given the vector below, write two regex patterns and subset the initial vector two times. First find only words that have ONLY consonant letters in it. Secondly find the words that end in "ing" but not in "iing". (16 points)**
-```{r}
-given_vector <- c("try", "monoskiing", "to", "do", "paraskiing", "freeskiing", "the", "right", "thing", "gym", "why", "cry", "wing")
+min_pop_country <- countries[countries$Population == 7026, "Country"]
+min_pop_country
 ```
 
 ```{r}
-str_subset(given_vector, pattern="[aeiou]", negate=TRUE)
-```
-```{r}
-str_subset(given_vector, pattern="[^i]ing$")
+max_pop_country <- countries[countries$Population == 1313973713, "Country"]
+max_pop_country
 ```
 
+As one would expect, the most populated country is China, and the one with smallest population is St Pierre & Miquelon.
 
-**1.12 Subset the vector to have only those words, that contain two or more consonant-vowel pairs. (12 points)**
-A small example: along - does not satisfy, there is only one pair of consanant-vowel pair "lo".  
-A small example: active - satisfies, contains "ti", "ve".  
+
+Now suppose we want to consider only those countries, which are in the region *C.W. OF IND. STATES*. Subset the dataframe as follows. Name the new dataframe *CIS_countries*.
 
 ```{r}
-words <- c("along", "active", "advertise", "become", "away", "ever", "exist", "eleven")
-str_subset(words, pattern = "([^aeiou][aeiou]){2,}")
+CIS_countries <- countries[countries$Region == "C.W. OF IND. STATES", ]
+str(CIS_countries)
 ```
+
+And we can see that there are 12 countries that are CIS members according to the dataset. 
+
+
+Consider the climate of the CIS countries. Calculate the mean and standard deviation of the feature. What can you say about the results? 
+
+```{r}
+mean_cis_climate <- mean(CIS_countries$Climate, na.rm = TRUE)
+mean_cis_climate
+```
+
+```{r}
+std_cis_climate <- sd(CIS_countries$Climate, na.rm = TRUE)
+std_cis_climate
+```
+
+We can see that standard deviation is quite big considering the fact that the range of Climate features is from 1 to 4, so the climate of the CIS countries are quite different.  
+
+The difference between the birth rate and the death rate of a country or place is called the natural increase. The natural increase is calculated by subtracting the death rate from the birth rate. *Natural increase = birth rate - death rate.* Calculate Natural Increase and keep it in the dataframe under a column *NaturalIncrease*. Then find which countries have the highest and lowest natural increase.
+```{r}
+countries$NaturalIncrease <- countries$Birthrate - countries$Deathrate
+min_NI <- min(countries$NaturalIncrease, na.rm = T)
+max_NI <- max(countries$NaturalIncrease, na.rm = T)
+min_NI
+max_NI
+```
+```{r}
+countries_NI <- countries[!is.na(countries$NaturalIncrease),]
+min_NI_country <- countries_NI[countries_NI$NaturalIncrease == min_NI, "Country"]
+max_NI_country <- countries_NI[countries_NI$NaturalIncrease == max_NI, "Country"]
+min_NI_country
+max_NI_country
+```
+
+As we can see they are not the same countries with min and max population. Bostwana has the least Natural Increase, and Gaza Strip has the biggest value for Natural Increase. 
+
+
+*Plot a scatterplot using between Population and Area_sqm*. 
+
+```{r}
+library(ggplot2)
+ggplot(data=countries, aes(x=Population, y=Area_sqm)) +
+  geom_point() + 
+  labs(title = "Scatterplot between Population and Are of countries", 
+       x = "Population of the country", y = "Area of the country") +
+  theme_minimal() 
+```
+As we can see logically countries with extremely high population have bigger area. Also one can see, that there are 6 countries that have larger area than most of the countries.  
+
+Because of the outliers, we can interpret the graph better if we zoom in:
+
+```{r}
+ggplot(data=countries, aes(x=Population, y=Area_sqm)) +
+  geom_point() + 
+  labs(title = "Scatterplot between Population and Are of countries", 
+       x = "Population of the country", y = "Area of the country") +
+  theme_minimal() +
+  xlim(0, 150000000) + ylim(0, 3000000)
+```
+
+In zoomed-in version of the graph, more points can be seen clearly, and we can see that there are both countries that have bigger area and bigger population, and also countries that have high population but small area, and the inverse. 
 
 
 
