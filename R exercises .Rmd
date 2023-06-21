@@ -1,7 +1,6 @@
 ---
 title: "R Exercises"
-author: "Sofi Khachatryan
-output: pdf_document
+author: "Sofi Khachatryan"
 ---
 
 ```{r setup, include=FALSE}
